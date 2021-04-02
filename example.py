@@ -1,5 +1,5 @@
 import numpy as np
-from lightcurve import calc_lightcurve
+from kilonova import calc_lightcurve
 
 # constants
 c = 2.99792458e10

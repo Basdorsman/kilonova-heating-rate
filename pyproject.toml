@@ -3,6 +3,7 @@ name = "kilonova"
 version = "0.1.0"
 description = "Calculate Kilonova light curves (kilonova model by Kenta Hotokezaka)"
 authors = ["BasDorsman"]
+include = ["kilonova/*.dat"]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"

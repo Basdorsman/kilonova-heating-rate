@@ -1,8 +1,11 @@
+from importlib import resources
 import math
+
 import numpy as np
 from numba import jit
 
-heatingrate = np.loadtxt("input_files/Heating_Korobkin2012.dat")
+with resources.open_text(__package__, 'Heating_Korobkin2012.dat') as f:
+    heatingrate = np.loadtxt(f)
 heat_time = 10**heatingrate[:, 0]
 heat_rate = 10**heatingrate[:, 1]
 
