@@ -18,7 +18,7 @@ sigma_SB = 5.670373e-5
 
 
 @jit(nopython=True)
-def calc_lightcurve(Mej, vej, alpha_max, alpha_min, n, kappa_low, kappa_high, be_kappa):
+def calc_lightcurve(Mej, vej, alpha_max, alpha_min, n, kappa_low, kappa_high, be_kappa, dt, tmax):
 
     Nbeta = 100
     rho0 = Mej*(n-3.)/(4.*np.pi*vej**3)/(1.-(alpha_max/alpha_min)**(-n+3))
@@ -53,7 +53,7 @@ def calc_lightcurve(Mej, vej, alpha_max, alpha_min, n, kappa_low, kappa_high, be
     taus = np.array(tau_tmps)
     Eins = np.zeros(len(bes))
 
-    dt = 0.005*day
+    dt = dt*day
     t = 0.01*day
     ts = []
     Ls = []
@@ -61,7 +61,7 @@ def calc_lightcurve(Mej, vej, alpha_max, alpha_min, n, kappa_low, kappa_high, be
     j = 0
     k = 0
 
-    while(t < 30.*day):
+    while(t < tmax*day):
 
         while t > heat_time[k]*day:
             k += 1

@@ -24,9 +24,10 @@ kappa_low = 0.5  #opacity [cm^2/g] for v > v_kappa
 kappa_high = 3.0 #opacity [cm^2/g] for v < v_kappa
 be_kappa = 0.2
 
+dt = 0.005 #days
+tmax = 1 #days
 
 
-
-LC = calc_lightcurve(Mej,vej,alpha_max,alpha_min,n,kappa_low,kappa_high,be_kappa)
+LC = calc_lightcurve(Mej,vej,alpha_max,alpha_min,n,kappa_low,kappa_high,be_kappa,dt,tmax)
 
 print(LC['LC'])
