@@ -51,32 +51,15 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
     be_min = vej*alpha_min/c
     be_max = vej*alpha_max/c
 
-    be = be_min
-    dbe = be_min/float(Nbeta)
+    bes = np.linspace(be_min, be_max, Nbeta)
+    dbe = bes[1] - bes[0]
+    taus = np.where(
+        bes > be_kappa,
+        kappa_low*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.),
+        kappa_low*be_min*c*rho0*((be_kappa/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)+kappa_high*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_kappa/be_min)**(-n+1))/(n-1.))
+    dMs = 4.*np.pi*vej**3*rho0*(bes/be_min)**(-n+2)*dbe/be_min
+    tds = taus*bes
 
-    be_tmps = []
-    tau_tmps = []
-    dM_tmps = []
-    td_tmps = []
-
-    while be <= be_max:
-        if be > be_kappa:
-            tau = kappa_low*be_min*c*rho0*((be/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)
-        else:
-            tau = kappa_low*be_min*c*rho0*((be_kappa/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)+kappa_high*be_min*c*rho0*((be/be_min)**(-n+1)-(be_kappa/be_min)**(-n+1))/(n-1.)
-        dM = 4.*np.pi*vej**3*rho0*(be/be_min)**(-n+2)*dbe/be_min
-        td2 = tau*be
-        tau_tmps.append(tau)
-        td_tmps.append(td2)
-        be_tmps.append(be)
-        dM_tmps.append(dM)
-
-        be += dbe
-
-    bes = np.array(be_tmps)
-    dMs = np.array(dM_tmps)
-    tds = np.array(td_tmps)
-    taus = np.array(tau_tmps)
     Eins = np.zeros(len(bes))
 
     dt = dt*day
