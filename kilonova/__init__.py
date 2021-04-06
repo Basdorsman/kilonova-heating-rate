@@ -195,10 +195,9 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
 
         j += 1
 
-    for i in range(len(ts)):
-        ts[i] = ts[i]/day
+    ts = np.multiply(ts,1/day)
 
-    data = {'t': np.asarray(ts), 'LC': np.asarray(Ls), 'T': np.asarray(temps)}
+    data = {'t': ts, 'LC': np.asarray(Ls), 'T': np.asarray(temps)}
     return data
 
 
