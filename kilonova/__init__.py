@@ -6,11 +6,7 @@ from numba import jit
 
 with resources.open_text(__package__, 'Heating_Korobkin2012.dat') as f:
     heatingrate = np.loadtxt(f)
-heat_time = 10**heatingrate[:, 0]
-heat_rate = 10**heatingrate[:, 1]
-
-log_heat_time = np.log(heat_time)
-log_heat_rate = np.log(heat_rate)
+log_heat_time, log_heat_rate = heatingrate.T / np.log10(np.e)
 
 day = 86400.
 c = 2.99792458e10
