@@ -13,8 +13,8 @@ Amin = 84
 Amax = 209 #lanthanide rich
 
 ##########ejecta parameters for thermalization
-Mej = 0.01*Msun
-vej = 0.2*c
+Mej = 0.05*Msun
+vej = 0.1*c
 n = 4.5 # Is this power law too sharp maybe?
 alpha_max = 4.0#v_max = alpha_max * vej
 alpha_min = 1.#v_min = alpha_min * vej
@@ -24,10 +24,10 @@ kappa_low = 0.5  #opacity [cm^2/g] for v > v_kappa
 kappa_high = 3.0 #opacity [cm^2/g] for v < v_kappa
 be_kappa = 0.2
 
-dt = 0.005 #days
+dt = 0.01 #days
 tmax = 1 #days
 
 
-LC = calc_lightcurve(Mej,vej,alpha_max,alpha_min,n,kappa_low,kappa_high,be_kappa,dt,tmax)
+LC = calc_lightcurve(Mej,vej,alpha_min,alpha_max,n,kappa_low,kappa_high,be_kappa,dt,tmax)
 
 print(LC['LC'])

@@ -48,18 +48,18 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
     """
     Nbeta = 100
     rho0 = Mej*(n-3.)/(4.*np.pi*vej**3)/(1.-(alpha_max/alpha_min)**(-n+3))
+    
     be_min = vej*alpha_min/c
     be_max = vej*alpha_max/c
-
     bes = np.linspace(be_min, be_max, Nbeta)
     dbe = bes[1] - bes[0]
+    
     taus = np.where(
         bes > be_kappa,
         kappa_low*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.),
         kappa_low*be_min*c*rho0*((be_kappa/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)+kappa_high*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_kappa/be_min)**(-n+1))/(n-1.))
     dMs = 4.*np.pi*vej**3*rho0*(bes/be_min)**(-n+2)*dbe/be_min
     tds = taus*bes
-
     Eins = np.zeros(len(bes))
 
     dt = dt*day
@@ -156,7 +156,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             Eins[i] += (dE_RK1+2.*dE_RK2+2.*dE_RK3+dE_RK4)/6.
             Ltot += (L_RK1 + 2.*L_RK2 + 2.*L_RK3+L_RK4)/6.
         t += dt
-
+        
         # search for the shell of tau = 1
         if taus[0]/(t*t) > 1 and taus[len(bes)-1]/(t*t) < 1:
             l = 0
@@ -195,8 +195,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
 
         j += 1
 
-    ts = np.multiply(ts,1/day)
-
+    ts = np.multiply(np.asarray(ts),1/day)
     data = {'t': ts, 'LC': np.asarray(Ls), 'T': np.asarray(temps)}
     return data
 
