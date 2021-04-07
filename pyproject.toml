@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kilonova"
-version = "0.1.0"
+version = "0.1.1"
 description = "Calculate Kilonova light curves (kilonova model by Kenta Hotokezaka)"
 authors = ["BasDorsman"]
 include = ["kilonova/*.dat"]
