@@ -94,7 +94,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             k += 1
         heat_th2 = interp((t+dt)/day, heat_time[k-1], heat_time[k], heat_rate[k-1], heat_rate[k])
 
-        Ltot = 0.
+        Ltot = 1e-100 #to avoid devide by zero errors when calculating AB mag later
         for i in range(len(bes)):
             # RK step 1
             E_RK1 = Eins[i]

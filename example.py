@@ -23,9 +23,7 @@ be_kappa = 0.2
 
 dt = 0.01 #days
 tmax = 1 #days
-#error_params2 = [1.06505346e+32, 0.05*c, 1.11018947e+00, 2.65438426e+00, 3.61941215e+00, 4.40908571e-01, 4.29176517e+00, 0.25, 4.27850575e+01]
-#Mej,vej,alpha_min,alpha_max,n,kappa_low,kappa_high,be_kappa, D = error_params2
-LC = calc_lightcurve(Mej,vej,alpha_min,alpha_max,n,kappa_low,kappa_high,be_kappa,dt,tmax)
 
+LC = calc_lightcurve(Mej,vej,alpha_min,alpha_max,n,kappa_low,kappa_high,be_kappa,dt,tmax)
 
 print(LC['LC'])
