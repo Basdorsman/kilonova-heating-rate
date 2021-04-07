@@ -55,22 +55,21 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
         and temperature 'T' [kelvin].
 
     """
-    Nbeta = 100
+    Nbeta = 200
     rho0 = Mej*(n-3.)/(4.*np.pi*vej**3)/(1.-(alpha_max/alpha_min)**(-n+3))
     
     be_min = vej*alpha_min/c
     be_max = vej*alpha_max/c
-    bes = np.linspace(be_min, be_max, Nbeta)
+    bes = np.linspace(be_min, be_max-(be_max-be_min)/Nbeta, Nbeta)
     dbe = bes[1] - bes[0]
-    
     taus = np.where(
         bes > be_kappa,
         kappa_low*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.),
         kappa_low*be_min*c*rho0*((be_kappa/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)+kappa_high*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_kappa/be_min)**(-n+1))/(n-1.))
     dMs = 4.*np.pi*vej**3*rho0*(bes/be_min)**(-n+2)*dbe/be_min
     tds = taus*bes
+      
     Eins = np.zeros(len(bes))
-
     dt = dt*day
     t = 0.01*day
     ts = []
@@ -78,6 +77,8 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
     temps = []
     j = 0
     k = 0
+
+
 
     while(t < tmax*day):
 
