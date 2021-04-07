@@ -20,31 +20,40 @@ sigma_SB = 5.670373e-5
 @jit(nopython=True)
 def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be_kappa, dt, tmax):
     """
-    Calculates a lightcurve according to the Hotokezaka & Nakar kilonova model, which you can find here: https://github.com/hotokezaka/HeatingRate 
+    Calculates a lightcurve according to the Hotokezaka & Nakar kilonova model,
+    which you can find here: https://github.com/hotokezaka/HeatingRate
 
     Parameters
     ----------
     Mej : Ejecta mass [g]
-    vej : Velocity of ejecta [cm/s]  
-        This parameter is used to calculate the min and max ejecta velocity of the radial density profile along with `alpha_max` and `alpha_min`.
+    vej : Velocity of ejecta [cm/s]
+        This parameter is used to calculate the min and max ejecta velocity of
+        the radial density profile along with `alpha_max` and `alpha_min`.
     alpha_min : multiplicative factor [-]
-        This parameter denominates the minimum velocity in the radial density profile as follows: v_min = alpha_min * vej.
+        This parameter denominates the minimum velocity in the radial density
+        profile as follows: v_min = alpha_min * vej.
     alpha_max : multiplicative factor [-]
-        This parameter denominates the maximum velocity in the radial density profile as follows: v_max = alpha_max * vej.
+        This parameter denominates the maximum velocity in the radial density
+        profile as follows: v_max = alpha_max * vej.
     n : power law index of radial density profile [-]
-        Rho (the radial density) is a function of time and velocity and is proportional to (v/v_min)^-n, where v_min < v < v_max. 
-    kappa_low : opacity of the outer part of the ejecta [cm^2/g] 
-        Opacity for v > `be_kappa`. This corresponds to the faster moving, outer part of the ejecta.
+        Rho (the radial density) is a function of time and velocity and is
+        proportional to (v/v_min)^-n, where v_min < v < v_max.
+    kappa_low : opacity of the outer part of the ejecta [cm^2/g]
+        Opacity for v > `be_kappa`. This corresponds to the faster moving,
+        outer part of the ejecta.
     kappa_high : opacity of the inner part of the ejecta [cm^2/g]
-        Opacity for v < `be_kappa`. This corresponds to the slower moving, inner part of the ejecta.
+        Opacity for v < `be_kappa`. This corresponds to the slower moving,
+        inner part of the ejecta.
     be_kappa: transition velocity of the opacity [c]
     dt : time step [days]
     tmax : latest time for which to calculate light curve [days]
-    
+
     Returns
     -------
     data : New dict containing 't', 'LC' and 'T'
-        This dict contains time 't' [days], bolometric luminosity 'LC' [erg/s] and temperature 'T' [kelvin]. 
+        This dict contains time 't' [days], bolometric luminosity 'LC' [erg/s]
+        and temperature 'T' [kelvin].
+
     """
     Nbeta = 100
     rho0 = Mej*(n-3.)/(4.*np.pi*vej**3)/(1.-(alpha_max/alpha_min)**(-n+3))
@@ -195,7 +204,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
 
         j += 1
 
-    ts = np.multiply(ts,1/day)
+    ts = np.multiply(ts, 1/day)
 
     data = {'t': ts, 'LC': np.asarray(Ls), 'T': np.asarray(temps)}
     return data
