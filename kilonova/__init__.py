@@ -82,17 +82,10 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
 
     while(t < tmax*day):
 
-        while t > heat_time[k]*day:
-            k += 1
-        heat_th0 = interp(t/day, heat_time[k-1], heat_time[k], heat_rate[k-1], heat_rate[k])
+        heat_th0 = np.exp(np.interp(np.log(t/day), np.log(heat_time), np.log(heat_rate)))
+        heat_th1 = np.exp(np.interp(np.log((t+0.5*dt)/day), np.log(heat_time), np.log(heat_rate))) 
+        heat_th2 = np.exp(np.interp(np.log((t+dt)/day), np.log(heat_time), np.log(heat_rate)))
 
-        while t+0.5*dt > heat_time[k]*day:
-            k += 1
-        heat_th1 = interp((t+0.5*dt)/day, heat_time[k-1], heat_time[k], heat_rate[k-1], heat_rate[k])
-
-        while t+dt > heat_time[k]*day:
-            k += 1
-        heat_th2 = interp((t+dt)/day, heat_time[k-1], heat_time[k], heat_rate[k-1], heat_rate[k])
 
         Ltot = 1e-100 #to avoid devide by zero errors when calculating AB mag later
         for i in range(len(bes)):
@@ -102,10 +95,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             t_dif = tds[i]/t_RK1
             heat = dMs[i] * heat_th0
 
-            if t_RK1 > t_dif:
-                tesc = t_dif + bes[i]*t_RK1
-            else:
-                tesc = t_RK1 + bes[i]*t_RK1
+            tesc = np.minimum(t_dif, t_RK1) + bes[i]*t_RK1
 
             ymax = np.sqrt(0.5*t_dif/t_RK1)
             erfc = math.erfc(ymax)
@@ -119,10 +109,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             t_dif = tds[i]/t_RK2
             heat = dMs[i]*(heat_th1)
 
-            if t_RK2 > t_dif:
-                tesc = t_dif + bes[i]*t_RK2
-            else:
-                tesc = t_RK2 + bes[i]*t_RK2
+            tesc = np.minimum(t_dif, t_RK2) + bes[i]*t_RK2
 
             ymax = np.sqrt(0.5*t_dif/t_RK2)
             erfc = math.erfc(ymax)
@@ -136,10 +123,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             t_dif = tds[i]/t_RK3
             heat = dMs[i] * heat_th1
 
-            if t_RK3 > t_dif:
-                tesc = t_dif + bes[i]*t_RK3
-            else:
-                tesc = t_RK3 + bes[i]*t_RK3
+            tesc = np.minimum(t_dif, t_RK3) + bes[i]*t_RK3
 
             ymax = np.sqrt(0.5*t_dif/t_RK3)
             erfc = math.erfc(ymax)
@@ -153,10 +137,7 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
             t_dif = tds[i] / t_RK4
             heat = dMs[i] * heat_th2
 
-            if t_RK4 > t_dif:
-                tesc = t_dif + bes[i]*t_RK4
-            else:
-                tesc = t_RK4 + bes[i]*t_RK4
+            tesc = np.minimum(t_dif, t_RK4) + bes[i]*t_RK4
 
             ymax = np.sqrt(0.5*t_dif/t_RK4)
             erfc = math.erfc(ymax)
