@@ -9,6 +9,9 @@ with resources.open_text(__package__, 'Heating_Korobkin2012.dat') as f:
 heat_time = 10**heatingrate[:, 0]
 heat_rate = 10**heatingrate[:, 1]
 
+log_heat_time = np.log(heat_time)
+log_heat_rate = np.log(heat_rate)
+
 day = 86400.
 c = 2.99792458e10
 sigma_SB = 5.670373e-5
@@ -82,9 +85,9 @@ def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be
 
     while(t < tmax*day):
 
-        heat_th0 = np.exp(np.interp(np.log(t/day), np.log(heat_time), np.log(heat_rate)))
-        heat_th1 = np.exp(np.interp(np.log((t+0.5*dt)/day), np.log(heat_time), np.log(heat_rate))) 
-        heat_th2 = np.exp(np.interp(np.log((t+dt)/day), np.log(heat_time), np.log(heat_rate)))
+        heat_th0 = np.exp(np.interp(np.log(t/day), log_heat_time, log_heat_rate))
+        heat_th1 = np.exp(np.interp(np.log((t+0.5*dt)/day), log_heat_time, log_heat_rate)) 
+        heat_th2 = np.exp(np.interp(np.log((t+dt)/day), log_heat_time, log_heat_rate))
 
 
         Ltot = 1e-100 #to avoid devide by zero errors when calculating AB mag later
