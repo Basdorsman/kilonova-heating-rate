@@ -7,8 +7,10 @@ include = ["kilonova/*.dat"]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.10"
+astropy = "*"
 numpy = "^1.20.2"
 numba = "^0.53.1"
+scipy = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
