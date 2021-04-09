@@ -6,10 +6,9 @@ authors = ["BasDorsman"]
 include = ["kilonova/*.dat"]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.10"
+python = "^3.7"
 astropy = "*"
-numpy = "^1.20.2"
-numba = "^0.53.1"
+numpy = "*"
 scipy = "*"
 
 [tool.poetry.dev-dependencies]
