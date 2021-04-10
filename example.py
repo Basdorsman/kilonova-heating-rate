@@ -17,7 +17,7 @@ L, T = lightcurve(t, mass, velocities, opacities, n)
 
 # Benchmark it
 timing = int(np.round(1e6 * np.median(timeit.repeat(
-    'bolometric_lightcurve(t, mass, velocities, opacities, n)',
+    'lightcurve(t, mass, velocities, opacities, n)',
     globals=globals(), number=1, repeat=10))))
 
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(4, 4))
