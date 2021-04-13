@@ -44,6 +44,9 @@ def lightcurve(t, mass, velocities, opacities, n):
     opacities must be an array of length >= 1 (one less than the length of the
     velocities array), forming a lookup table of velocities to opacities.
 
+    The output is the effective blackbody luminosity, temperature, and radius
+    as a function of time.
+
     Parameters
     ----------
     time : :class:`astropy.units.Quantity`
@@ -67,6 +70,8 @@ def lightcurve(t, mass, velocities, opacities, n):
         Luminosity in units of `erg/s`.
     temperature : :class:`astropy.units.Quantity`
         Temperature in units of `K`.
+    radius : :class:`astropy.units.Quantity`
+        Blackbody radius in units of `cm`.
 
     """
     # Validate arguments
@@ -128,4 +133,4 @@ def lightcurve(t, mass, velocities, opacities, n):
     T = ((L / (4 * np.pi * c.sigma_sb * np.square(r)))**0.25).to(u.K)
 
     # Done!
-    return L, T
+    return L, T, r.to(u.cm)
