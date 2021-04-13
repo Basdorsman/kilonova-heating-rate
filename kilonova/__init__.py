@@ -73,6 +73,37 @@ def lightcurve(t, mass, velocities, opacities, n):
     radius : :class:`astropy.units.Quantity`
         Blackbody radius in units of `cm`.
 
+    Examples
+    --------
+
+    Evaluate luminosity, temperature, and radius at a given time:
+
+    >>> from astropy.constants import c
+    >>> from astropy import units as u
+    >>> t = 1 * u.day  # Time
+    >>> mass = 0.05 * u.Msun  # Ejected mass
+    >>> velocities = np.asarray([0.1, 0.2]) * c  # Inner and outer velocity
+    >>> opacities = 3.0 * u.cm**2 / u.g  # Constant gray opacity
+    >>> n = 4.5  # Velocity profile
+    >>> L, T, r = lightcurve(t, mass, velocities, opacities, n)
+    >>> print(L)
+    7.205179189890574e+40 erg / s
+    >>> print(T)
+    4435.734488631963 K
+    >>> print(r)
+    511070140219816.5 cm
+
+    Evaluate the flux at a given distance in a given band using synphot:
+
+    >>> import synphot
+    >>> DL = 100 * u.Mpc  # Luminosity distance
+    >>> spectrum = synphot.SourceSpectrum(synphot.BlackBody1D, temperature=T)
+    >>> spectrum *= np.pi * (r / DL).to_value(u.dimensionless_unscaled)**2
+    >>> bandpass = synphot.SpectralElement.from_filter('johnson_j')
+    >>> apparent_mag = synphot.Observation(spectrum, bandpass).effstim(u.ABmag)
+    >>> print(apparent_mag)
+    21.031737072570557 mag(AB)
+
     """
     # Validate arguments
     t0 = 0.01 * u.day
