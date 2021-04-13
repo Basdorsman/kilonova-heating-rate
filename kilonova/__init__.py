@@ -76,6 +76,7 @@ def lightcurve(t, mass, velocities, opacities, n):
     """
     # Validate arguments
     t0 = 0.01 * u.day
+    opacities = np.atleast_1d(opacities)
     if np.any(t <= t0):
         raise ValueError(f'Times must be > {t0}')
     if len(velocities) != len(opacities) + 1:
