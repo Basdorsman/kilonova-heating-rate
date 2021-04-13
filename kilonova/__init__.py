@@ -1,198 +1,131 @@
 from importlib import resources
-import math
 
+from astropy import constants as c
+from astropy import units as u
 import numpy as np
-from numba import jit
+from scipy.special import erfc
+from scipy.integrate import solve_ivp
+from scipy.interpolate import interp1d
+
+__all__ = ('lightcurve',)
 
 with resources.open_text(__package__, 'Heating_Korobkin2012.dat') as f:
-    heatingrate = np.loadtxt(f)
-log_heat_time, log_heat_rate = heatingrate.T / np.log10(np.e)
-
-day = 86400.
-c = 2.99792458e10
-sigma_SB = 5.670373e-5
-
-# Note: throughout, set "nopython" mode for best performance,
-# equivalent to @njit.
+    log_time, log_heating_rate = np.loadtxt(f).T / np.log10(np.e)
+_log_heating_interp = interp1d(
+    log_time + np.log(u.day.to(u.s)), log_heating_rate, assume_sorted=True)
+del log_time, log_heating_rate
 
 
-@jit(nopython=True)
-def calc_lightcurve(Mej, vej, alpha_min, alpha_max, n, kappa_low, kappa_high, be_kappa, dt, tmax):
-    """
-    Calculates a lightcurve according to the Hotokezaka & Nakar kilonova model,
-    which you can find here: https://github.com/hotokezaka/HeatingRate
+def _luminosity(E, t, td, be):
+    t_dif = td / t
+    tesc = np.minimum(t, t_dif) + be * t
+    ymax = np.sqrt(0.5 * t_dif / t)
+    return erfc(ymax) * E / tesc
+
+
+def _rhs(t, E, dM, td, be):
+    heat = dM * np.exp(_log_heating_interp(np.log(t)))
+    L = _luminosity(E, t, td, be)
+    dE_dt = -E / t - L + heat
+    return dE_dt
+
+
+def lightcurve(t, mass, velocities, opacities, n):
+    r"""Calculate a kilonova light curve using the Hotokezaka & Nakar model.
+
+    Evolve a the Hotokezaka & Nakar 2020 kilonova heating light curve model
+    (:doi:`10.3847/1538-4357/ab6a98`). This model assumes a density profile
+    that is a power-law function of velocity, given by:
+
+    .. math:: \rho(v) = \rho_0 \left(\frac{v}{v_0}\right)^{-n}
+
+    The opacity is a piecewise constant function of velocity. The velocities
+    must be an array of length >= 2, :math:`(v_0, \dots, v_\mathrm{max})`. The
+    opacities must be an array of length >= 1 (one less than the length of the
+    velocities array), forming a lookup table of velocities to opacities.
 
     Parameters
     ----------
-    Mej : Ejecta mass [g]
-    vej : Velocity of ejecta [cm/s]
-        This parameter is used to calculate the min and max ejecta velocity of
-        the radial density profile along with `alpha_max` and `alpha_min`.
-    alpha_min : multiplicative factor [-]
-        This parameter denominates the minimum velocity in the radial density
-        profile as follows: v_min = alpha_min * vej.
-    alpha_max : multiplicative factor [-]
-        This parameter denominates the maximum velocity in the radial density
-        profile as follows: v_max = alpha_max * vej.
-    n : power law index of radial density profile [-]
-        Rho (the radial density) is a function of time and velocity and is
-        proportional to (v/v_min)^-n, where v_min < v < v_max.
-    kappa_low : opacity of the outer part of the ejecta [cm^2/g]
-        Opacity for v > `be_kappa`. This corresponds to the faster moving,
-        outer part of the ejecta.
-    kappa_high : opacity of the inner part of the ejecta [cm^2/g]
-        Opacity for v < `be_kappa`. This corresponds to the slower moving,
-        inner part of the ejecta.
-    be_kappa: transition velocity of the opacity [c]
-    dt : time step [days]
-    tmax : latest time for which to calculate light curve [days]
+    time : :class:`astropy.units.Quantity`
+        Rest-frame time(s) at which to evaluate the light curve, in units
+        compatible with `s`. May be given as an array in order to evaluate
+        at multiple times.
+    mass : :class:`astropy.units.Quantity`
+        Ejected mass in units compatible with `g`.
+    velocities : :class:`astropy.units.Quantity`
+        Array of ejecta velocities in units compatible with `cm/s`.
+        Length must be >= 2.
+    opacities : :class:`astropy.units.Quantity`
+        Array of opacities in units compatible with `cm**2/g`.
+        Lenght must be >= 1, and 1 less than the length of `vej`.
+    n : int, float
+        Power-law index of density profile.
 
     Returns
     -------
-    data : New dict containing 't', 'LC' and 'T'
-        This dict contains time 't' [days], bolometric luminosity 'LC' [erg/s]
-        and temperature 'T' [kelvin].
+    luminosity : :class:`astropy.units.Quantity`
+        Luminosity in units of `erg/s`.
+    temperature : :class:`astropy.units.Quantity`
+        Temperature in units of `K`.
 
     """
-    Nbeta = 200
-    rho0 = Mej*(n-3.)/(4.*np.pi*vej**3)/(1.-(alpha_max/alpha_min)**(-n+3))
-    
-    be_min = vej*alpha_min/c
-    be_max = vej*alpha_max/c
-    bes = np.linspace(be_min, be_max-(be_max-be_min)/Nbeta, Nbeta)
-    dbe = bes[1] - bes[0]
-    taus = np.where(
-        bes > be_kappa,
-        kappa_low*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.),
-        kappa_low*be_min*c*rho0*((be_kappa/be_min)**(-n+1)-(be_max/be_min)**(-n+1))/(n-1.)+kappa_high*be_min*c*rho0*((bes/be_min)**(-n+1)-(be_kappa/be_min)**(-n+1))/(n-1.))
-    dMs = 4.*np.pi*vej**3*rho0*(bes/be_min)**(-n+2)*dbe/be_min
-    tds = taus*bes
-      
-    Eins = np.zeros(len(bes))
-    dt = dt*day
-    t = 0.01*day
-    ts = []
-    Ls = []
-    temps = []
-    j = 0
-    k = 0
+    # Validate arguments
+    t0 = 0.01 * u.day
+    if np.any(t <= t0):
+        raise ValueError(f'Times must be > {t0}')
+    if len(velocities) != len(opacities) + 1:
+        raise ValueError('len(velocities) must be len(opacities) + 1')
 
+    # Convert to internal units.
+    t = t.to_value(u.s)
+    t0 = t0.to_value(u.s)
+    mej = mass.to_value(u.g)
+    bej = (velocities / c.c).to_value(u.dimensionless_unscaled)
+    vej_0 = velocities[0].to_value(u.cm / u.s)
+    kappas = opacities.to_value(u.cm**2 / u.g)
 
+    # Prepare velocity shells.
+    n_shells = 100
+    be_0 = bej[0]
+    be_max = bej[-1]
+    rho_0 = mej * (n - 3) / (4*np.pi*vej_0**3) / (1 - (be_max/be_0)**(3 - n))
+    dbe = (be_max - be_0) / n_shells
+    bes = np.arange(be_0, be_max, dbe)
 
-    while(t < tmax*day):
+    # Calculate optical depths from each shell to infinity.
+    i = np.searchsorted(bej, bes)  # Determine which shell we are in.
+    # Integrate across whole shells.
+    tau_accum = -np.cumsum((kappas * np.diff((bej/be_0)**(1-n)))[::-1])[::-1]
+    tau_accum = np.concatenate((tau_accum, [0]))
+    taus = tau_accum[i]
+    # Integrate across the remainder of the shell that we are in.
+    taus += kappas[i - 1] * ((bes/be_0)**(1-n) - (bej[i]/be_0)**(1-n))
+    taus *= vej_0 * rho_0 / (n - 1)
 
-        heat_th0 = np.exp(np.interp(np.log(t/day), log_heat_time, log_heat_rate))
-        heat_th1 = np.exp(np.interp(np.log((t+0.5*dt)/day), log_heat_time, log_heat_rate)) 
-        heat_th2 = np.exp(np.interp(np.log((t+dt)/day), log_heat_time, log_heat_rate))
+    dMs = 4*np.pi*vej_0**3*rho_0*(bes/be_0)**(2-n)*dbe/be_0
+    tds = taus * bes
 
+    # Evolve in time.
+    out = solve_ivp(
+        _rhs, (t0, t.max()), np.zeros(n_shells), first_step=t0,
+        args=(dMs[:, None], tds[:, None], bes[:, None]), vectorized=True)
 
-        Ltot = 1e-100 #to avoid devide by zero errors when calculating AB mag later
-        for i in range(len(bes)):
-            # RK step 1
-            E_RK1 = Eins[i]
-            t_RK1 = t
-            t_dif = tds[i]/t_RK1
-            heat = dMs[i] * heat_th0
+    # Find total luminosity.
+    LL = _luminosity(out.y, out.t[None, :], tds[:, None], bes[:, None]).sum(0)
+    log_L_interp = interp1d(
+        np.log(out.t[1:]), np.log(LL[1:]), kind='cubic', assume_sorted=True)
 
-            tesc = np.minimum(t_dif, t_RK1) + bes[i]*t_RK1
+    # Do cubic interpolation in log-log space to evaluate at sample times.
+    # Note that solve_ivp could do this in principal, but it does interpolation
+    # in linear-linear space, which causes some minor artifacts.
+    L = np.exp(log_L_interp(np.log(t))) * (u.erg / u.s)
 
-            ymax = np.sqrt(0.5*t_dif/t_RK1)
-            erfc = math.erfc(ymax)
+    # Effective radius
+    be = np.exp(np.interp(2*np.log(t), np.log(taus[::-1]), np.log(bes[::-1])))
+    r = be * t * (c.c * u.s)
 
-            L_RK1 = erfc*E_RK1/tesc
-            dE_RK1 = (-E_RK1/t_RK1 - L_RK1 + heat)*dt
+    # Effective temperature
+    T = ((L / (4 * np.pi * c.sigma_sb * np.square(r)))**0.25).to(u.K)
 
-            # RK step 2
-            E_RK2 = Eins[i] + 0.5*dE_RK1
-            t_RK2 = t+0.5*dt
-            t_dif = tds[i]/t_RK2
-            heat = dMs[i]*(heat_th1)
-
-            tesc = np.minimum(t_dif, t_RK2) + bes[i]*t_RK2
-
-            ymax = np.sqrt(0.5*t_dif/t_RK2)
-            erfc = math.erfc(ymax)
-
-            L_RK2 = erfc*E_RK2/tesc
-            dE_RK2 = (-E_RK2/t_RK2 - L_RK2 + heat)*dt
-
-            # RK step 3
-            E_RK3 = Eins[i] + 0.5*dE_RK2
-            t_RK3 = t+0.5*dt
-            t_dif = tds[i]/t_RK3
-            heat = dMs[i] * heat_th1
-
-            tesc = np.minimum(t_dif, t_RK3) + bes[i]*t_RK3
-
-            ymax = np.sqrt(0.5*t_dif/t_RK3)
-            erfc = math.erfc(ymax)
-
-            L_RK3 = erfc*E_RK3/tesc
-            dE_RK3 = (-E_RK3/t_RK3 - L_RK3 + heat)*dt
-
-            # RK step 4
-            E_RK4 = Eins[i] + dE_RK3
-            t_RK4 = t + dt
-            t_dif = tds[i] / t_RK4
-            heat = dMs[i] * heat_th2
-
-            tesc = np.minimum(t_dif, t_RK4) + bes[i]*t_RK4
-
-            ymax = np.sqrt(0.5*t_dif/t_RK4)
-            erfc = math.erfc(ymax)
-
-            L_RK4 = erfc*E_RK4/tesc
-            dE_RK4 = (-E_RK4/t_RK4 - L_RK4 + heat)*dt
-            Eins[i] += (dE_RK1+2.*dE_RK2+2.*dE_RK3+dE_RK4)/6.
-            Ltot += (L_RK1 + 2.*L_RK2 + 2.*L_RK3+L_RK4)/6.
-        t += dt
-        
-        # search for the shell of tau = 1
-        if taus[0]/(t*t) > 1 and taus[len(bes)-1]/(t*t) < 1:
-            l = 0
-            while taus[l]/(t*t) > 1:
-                l += 1
-            be = interp(t*t, taus[l-1], taus[l], bes[l-1], bes[l])
-            r = be*c*t
-        elif taus[len(bes)-1]/(t*t) > 1:
-            l = len(bes)-1
-            be = bes[l]
-            r = be*c*t
-        else:
-            l = 0
-            be = bes[0]
-            r = be*c*t
-        temp = (Ltot/(4*np.pi*sigma_SB*r*r))**0.25
-        if j < 10:
-            Ls.append(Ltot)
-            ts.append(t)
-            temps.append(temp)
-        elif j < 100:
-            if j % 3 == 0:
-                Ls.append(Ltot)
-                ts.append(t)
-                temps.append(temp)
-        elif j < 1000:
-            if j % 30 == 0:
-                Ls.append(Ltot)
-                ts.append(t)
-                temps.append(temp)
-        elif j < 10000:
-            if j % 100 == 0:
-                Ls.append(Ltot)
-                ts.append(t)
-                temps.append(temp)
-
-        j += 1
-
-    ts = np.multiply(np.asarray(ts),1/day)
-
-    data = {'t': ts, 'LC': np.asarray(Ls), 'T': np.asarray(temps)}
-    return data
-
-
-@jit(nopython=True)
-def interp(x, x1, x2, y1, y2):
-    n_p = np.log(y2/y1) / np.log(x2/x1)
-    f0 = y1*np.power(x1, -n_p)
-    return f0*np.power(x, n_p)
+    # Done!
+    return L, T
