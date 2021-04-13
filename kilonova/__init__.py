@@ -94,8 +94,11 @@ def lightcurve(t, mass, velocities, opacities, n):
     be_0 = bej[0]
     be_max = bej[-1]
     rho_0 = mej * (n - 3) / (4*np.pi*vej_0**3) / (1 - (be_max/be_0)**(3 - n))
-    dbe = (be_max - be_0) / n_shells
-    bes = np.arange(be_0, be_max, dbe)
+
+    # Use inverse log spacing for velocity steps.
+    bes = np.flipud(be_max + be_0 - np.geomspace(be_0, be_max, n_shells))
+    dbe = np.diff(bes)
+    bes = bes[:-1]
 
     # Calculate optical depths from each shell to infinity.
     i = np.searchsorted(bej, bes)  # Determine which shell we are in.
@@ -112,7 +115,7 @@ def lightcurve(t, mass, velocities, opacities, n):
 
     # Evolve in time.
     out = solve_ivp(
-        _rhs, (t0, t.max()), np.zeros(n_shells), first_step=t0,
+        _rhs, (t0, t.max()), np.zeros(len(bes)), first_step=t0,
         args=(dMs[:, None], tds[:, None], bes[:, None]), vectorized=True)
 
     # Find total luminosity.
