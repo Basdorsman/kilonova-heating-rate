@@ -3,7 +3,7 @@ import timeit
 
 from astropy import constants as c
 from astropy import units as u
-from kilonova import lightcurve
+from kilonova_heating_rate import lightcurve
 from matplotlib import pyplot as plt
 import numpy as np
 import synphot

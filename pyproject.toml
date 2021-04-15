@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "kilonova"
+name = "kilonova-heating-rate"
 version = "0.1.1"
 description = "Calculate Kilonova light curves (kilonova model by Kenta Hotokezaka)"
 authors = ["BasDorsman"]
-include = ["kilonova/*.dat"]
+include = ["kilonova_heating_rate/*.dat"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
