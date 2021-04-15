@@ -31,8 +31,8 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest pytest-cov
-        pytest --doctest-modules --cov=kilonova_heating_rate --cov-report=xml kilonova_heating_rate
+        pip install pytest pytest-cov pytest-doctestplus
+        pytest --doctest-plus --cov=kilonova_heating_rate --cov-report=xml kilonova_heating_rate
         coverage report
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
