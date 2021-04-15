@@ -1,8 +1,23 @@
 [tool.poetry]
 name = "kilonova-heating-rate"
-version = "0.1.1"
-description = "Calculate Kilonova light curves (kilonova model by Kenta Hotokezaka)"
-authors = ["BasDorsman"]
+version = "0.1.0"
+description = "Kilonova light curves from Hotokezaka & Nakar 2019"
+authors = [
+    "Bas Dorsman <bas.dorsman@student.uva.nl>",
+    "Geert Raaijmakers <g.raaijmakers@uva.nl>",
+    "Leo Singer <leo.p.singer@nasa.gov",
+    "Kenta Hotokezaka <kentah@g.ecc.u-tokyo.ac.jp>"]
+readme = "README.md"
+license = "BSD-3-Clause"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Astronomy"]
 include = ["kilonova_heating_rate/*.dat"]
 
 [tool.poetry.dependencies]
