@@ -9,13 +9,6 @@ from scipy.interpolate import interp1d
 
 __all__ = ('lightcurve',)
 
-with resources.open_text(__package__, 'Heating_Korobkin2012.dat') as f:
-    log_time, log_heating_rate = np.loadtxt(f).T / np.log10(np.e)
-_log_heating_interp = interp1d(
-    log_time + np.log(u.day.to(u.s)), log_heating_rate, assume_sorted=True)
-del log_time, log_heating_rate
-
-
 def _luminosity(E, t, td, be):
     t_dif = td / t
     tesc = np.minimum(t, t_dif) + be * t
@@ -24,10 +17,17 @@ def _luminosity(E, t, td, be):
 
 
 def _rhs(t, E, dM, td, be):
-    heat = dM * np.exp(_log_heating_interp(np.log(t)))
+    heat = dM * _heating_rate(t)
     L = _luminosity(E, t, td, be)
     dE_dt = -E / t - L + heat
     return dE_dt
+
+def _heating_rate(t, eth=0.5):
+    eps0=2e18
+    t0=1.3
+    sig=0.11
+    alpha=1.3
+    return eps0 * (0.5 - 1. / np.pi * np.arctan((t-t0) / sig))**alpha * eth / 0.5
 
 
 def lightcurve(t, mass, velocities, opacities, n):
