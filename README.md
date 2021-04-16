@@ -18,18 +18,6 @@ enhancements:
   system of ordinary differential equations that is solved to evalute the light
   curve.
 
-## To install
-
-Installation is easy with [Pip]:
-
-    $ pip install kilonova-heating-rate
-
-## To use
-
-See example code in [example.py].
-
-![Example plot](example.png)
-
 ## To cite
 
 If you use this work to produce a peer-reviewed journal article, please cite
@@ -42,6 +30,18 @@ the following papers:
 * Hotokezaka, K. & Nakar, E. 2020, "Radioactive Heating Rate of *r*-process
   Elements and Macronova Light Curve," *Astrophysical Journal*, 891, 152.
   https://doi.org/10.3847/1538-4357/ab6a98
+
+## To install
+
+Installation is easy with [Pip]:
+
+    $ pip install kilonova-heating-rate
+
+## To use
+
+See example code in [example.py].
+
+![Example plot](example.png)
 
 [Pip]: https://pip.pypa.io
 [Astropy]: https://www.astropy.org
