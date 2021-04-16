@@ -41,9 +41,9 @@ Installation is easy with [Pip]:
 
 See example code in [example.py].
 
-![Example plot](example.png)
+![Example plot](https://github.com/dorado-science/kilonova-heating-rate/raw/main/example.png)
 
 [Pip]: https://pip.pypa.io
 [Astropy]: https://www.astropy.org
 [Numpy]: https://github.com/numpy/numpy
-[example.py]: example.py
+[example.py]: https://github.com/dorado-science/kilonova-heating-rate/blob/main/example.py
