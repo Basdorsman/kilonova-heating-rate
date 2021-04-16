@@ -1,5 +1,3 @@
-from importlib import resources
-
 from astropy import constants as c
 from astropy import units as u
 import numpy as np
@@ -8,6 +6,7 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
 __all__ = ('lightcurve',)
+
 
 def _luminosity(E, t, td, be):
     t_dif = td / t
@@ -22,12 +21,14 @@ def _rhs(t, E, dM, td, be):
     dE_dt = -E / t - L + heat
     return dE_dt
 
+
 def _heating_rate(t, eth=0.5):
-    eps0=2e18
-    t0=1.3
-    sig=0.11
-    alpha=1.3
-    return eps0 * (0.5 - 1. / np.pi * np.arctan((t-t0) / sig))**alpha * eth / 0.5
+    eps0 = 2e18
+    t0 = 1.3
+    sig = 0.11
+    alpha = 1.3
+    brac = 0.5 - 1. / np.pi * np.arctan((t-t0) / sig)
+    return eps0 * brac**alpha * eth / 0.5
 
 
 def lightcurve(t, mass, velocities, opacities, n):
