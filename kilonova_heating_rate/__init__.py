@@ -23,10 +23,36 @@ def _rhs(t, E, dM, td, be):
 
 
 def _heating_rate(t, eth=0.5):
-    eps0 = 2e18
-    t0 = 1.3
-    sig = 0.11
-    alpha = 1.3
+    r"""Nuclear heating power as a function of time. This function is a
+    fit calculated in Korobkin et al. 2012 (:doi:`10.1111/j.1365-2966.2012.21859.x`), 
+    based on a set of simulations of nucleosynthesis in the dynamic ejecta 
+    of compact binary mergers. This fit contains the following fit parameters:
+    eps0 = 2e18, t0 = 1.3, sig = 0.11, alpha = 1.3.
+    
+    Parameters
+    ----------
+    time : :class:`astropy.units.Quantity`
+        Rest-frame time(s) at which to evaluate the light curve, in units
+        compatible with `s`. May be given as an array in order to evaluate
+        at multiple times.
+    eth : int, float
+        Heating efficiency parameter, introduced by Korobkin et al. 2012,
+        which measures the fraction of nuclear power which is retained in the
+        matter. They use eth=0.5.
+        
+    Returns
+    -------
+    nuclear heating power : float
+        The nuclear heating power (heating rate) has units (erg/g/s) which is 
+        implied but not explicitly used in this function.
+    
+    """
+    
+    
+    eps0 = 2e18 #units: erg/g/s
+    t0 = 1.3 #units: s
+    sig = 0.11 #units: s
+    alpha = 1.3 #units: -
     brac = 0.5 - 1. / np.pi * np.arctan((t-t0) / sig)
     return eps0 * brac**alpha * eth / 0.5
 
