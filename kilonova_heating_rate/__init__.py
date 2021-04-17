@@ -33,8 +33,8 @@ def _heating_rate(t, eth=0.5):
     Parameters
     ----------
     time : float, numpy.ndarray
-        Rest-frame time(s) at which to evaluate the light curve. May be given as
-        an array in order to evaluate at multiple times.
+        Rest-frame time(s) at which to evaluate the light curve. May be given
+        as an array in order to evaluate at multiple times.
     eth : int, float
         Heating efficiency parameter, introduced by Korobkin et al. 2012,
         which measures the fraction of nuclear power which is retained in the
@@ -47,10 +47,10 @@ def _heating_rate(t, eth=0.5):
         implied but not explicitly used in this function.
 
     """
-    eps0 = 2e18 # units: erg/g/s
-    t0 = 1.3 # units: s
-    sig = 0.11 # units: s
-    alpha = 1.3 # units: -
+    eps0 = 2e18  # units: erg/g/s
+    t0 = 1.3  # units: s
+    sig = 0.11  # units: s
+    alpha = 1.3  # units: -
     brac = 0.5 - 1. / np.pi * np.arctan((t-t0) / sig)
     return eps0 * brac**alpha * eth / 0.5
 
