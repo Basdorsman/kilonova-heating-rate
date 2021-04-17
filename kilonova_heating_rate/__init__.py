@@ -23,8 +23,9 @@ def _rhs(t, E, dM, td, be):
 
 
 def _heating_rate(t, eth=0.5):
-    r"""Nuclear specific heating rate as a function of time. This function is
-    a fit calculated in Korobkin et al. 2012
+    """Caluclate nuclear specific heating rate as a function of time.
+
+    This function is a fit calculated in Korobkin et al. 2012
     (:doi:`10.1111/j.1365-2966.2012.21859.x`), based on a set of simulations
     of nucleosynthesis in the dynamic ejecta of compact binary mergers. This
     fit contains the following fit parameters: eps0 = 2e18, t0 = 1.3,
@@ -35,15 +36,15 @@ def _heating_rate(t, eth=0.5):
     time : float, numpy.ndarray
         Rest-frame time(s) at which to evaluate the light curve. May be given
         as an array in order to evaluate at multiple times.
-    eth : int, float
+    eth : float, numpy.ndarray
         Heating efficiency parameter, introduced by Korobkin et al. 2012,
         which measures the fraction of nuclear power which is retained in the
         matter. They use eth = 0.5.
 
     Returns
     -------
-    nuclear specific heating rate : float
-        The nuclear heating power (heating rate) has units (erg/g/s) which is
+    heating_rate : float, numpy.ndarray
+        The nuclear specific heating rate has units (erg/g/s) which is
         implied but not explicitly used in this function.
 
     """
