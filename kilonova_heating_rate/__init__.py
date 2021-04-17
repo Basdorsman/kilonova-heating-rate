@@ -23,7 +23,7 @@ def _rhs(t, E, dM, td, be):
 
 
 def _heating_rate(t, eth=0.5):
-    """Caluclate nuclear specific heating rate as a function of time.
+    """Calculate nuclear specific heating rate as a function of time.
 
     This function is a fit calculated in Korobkin et al. 2012
     (:doi:`10.1111/j.1365-2966.2012.21859.x`), based on a set of simulations
