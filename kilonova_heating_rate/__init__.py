@@ -5,7 +5,14 @@ from scipy.special import erfc
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
+import importlib
+ht = importlib.import_module('kilonova_heating_rate.heat', __name__)
+
+
 __all__ = ('lightcurve',)
+kappa_effs = np.load('input_files/kappa_effs_A85_238.npy')
+ffraction = np.load('input_files/ffraction.npy')
+
 
 
 def _luminosity(E, t, td, be):
@@ -15,14 +22,22 @@ def _luminosity(E, t, td, be):
     return erfc(ymax) * E / tesc
 
 
-def _rhs(t, E, dM, td, be):
-    heat = dM * _heating_rate(t)
+def _rhs_korobkin(t, E, dM, td, be):
+    heat = dM * _heating_rate_korobkin(t)
+    L = _luminosity(E, t, td, be)
+    dE_dt = -E / t - L + heat
+    return dE_dt
+
+def _rhs_beta(t, E, dM, td, be, mass, vmin, vmax, Amin, Amax, ffraction,
+              kappa_effs, n):
+    heat = dM * _heating_rate_beta(t, mass, vmin, vmax, Amin, Amax, ffraction,
+              kappa_effs, n)
     L = _luminosity(E, t, td, be)
     dE_dt = -E / t - L + heat
     return dE_dt
 
 
-def _heating_rate(t, eth=0.5):
+def _heating_rate_korobkin(t, eth=0.5):
     """Calculate nuclear specific heating rate as a function of time.
 
     This function is a fit calculated in Korobkin et al. 2012
@@ -56,7 +71,15 @@ def _heating_rate(t, eth=0.5):
     return eps0 * brac**alpha * eth / 0.5
 
 
-def lightcurve(t, mass, velocities, opacities, n):
+def _heating_rate_beta(t,Mej,vmin,vmax,Amin,Amax,ffraction,kappa_effs,n):
+    beta = ht.calc_heating_rate(Mej,vmin,vmax,Amin,Amax,ffraction,kappa_effs,n)
+    heat_time = np.array(beta['t'])
+    heat_rate = np.array(beta['electron_th'])+np.array(beta['gamma_th'])
+    return np.interp(t,heat_time,heat_rate)
+
+
+def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
+               , Amin = 85, Amax = 209):
     r"""Calculate a kilonova light curve using the Hotokezaka & Nakar model.
 
     Evolve a the Hotokezaka & Nakar 2020 kilonova heating light curve model
@@ -131,6 +154,7 @@ def lightcurve(t, mass, velocities, opacities, n):
     21.031737072570557 mag(AB)
 
     """
+    print('going into lightcurve function')
     # Validate arguments
     t0 = 0.01 * u.day
     opacities = np.atleast_1d(opacities)
@@ -145,6 +169,7 @@ def lightcurve(t, mass, velocities, opacities, n):
     mej = mass.to_value(u.g)
     bej = (velocities / c.c).to_value(u.dimensionless_unscaled)
     vej_0 = velocities[0].to_value(u.cm / u.s)
+    vej_max = velocities[-1].to_value(u.cm / u.s)
     kappas = opacities.to_value(u.cm**2 / u.g)
 
     # Prepare velocity shells.
@@ -172,9 +197,17 @@ def lightcurve(t, mass, velocities, opacities, n):
     tds = taus * bes
 
     # Evolve in time.
-    out = solve_ivp(
-        _rhs, (t0, t.max()), np.zeros(len(bes)), first_step=t0,
-        args=(dMs[:, None], tds[:, None], bes[:, None]), vectorized=True)
+    if heating_function == 'korobkin':
+        out = solve_ivp(
+            _rhs_korobkin, (t0, t.max()), np.zeros(len(bes)), first_step=t0,
+            args=(dMs[:, None], tds[:, None], bes[:, None]),
+            vectorized=True)
+    elif heating_function == 'beta':
+        print('trying to solve ivp beta..')
+        out = solve_ivp(
+            _rhs_beta, (t0, t.max()), np.zeros(len(bes)), first_step=t0,
+            args=(dMs[:, None], tds[:, None], bes[:, None], mej, vej_0, vej_max,
+                  Amin, Amax, ffraction, kappa_effs, n), vectorized=True)
 
     # Find total luminosity.
     LL = _luminosity(out.y, out.t[None, :], tds[:, None], bes[:, None]).sum(0)

@@ -8,13 +8,14 @@ from matplotlib import pyplot as plt
 import numpy as np
 import synphot
 
+
 mass = 0.05 * u.Msun
 velocities = np.asarray([0.1, 0.2, 0.4]) * c.c
 opacities = np.asarray([3.0, 0.5]) * u.cm**2 / u.g
 n = 4.5
 t = np.geomspace(0.02, 10) * u.day
 
-L, T, r = lightcurve(t, mass, velocities, opacities, n)
+L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='beta')
 
 # Benchmark it
 timing = int(np.round(1e6 * np.median(timeit.repeat(
@@ -54,4 +55,4 @@ ax1.set_yscale('log')
 ax2.set_yscale('log')
 ax3.legend()
 fig.tight_layout()
-fig.savefig('example.png', dpi=300)
+#fig.savefig('example.png', dpi=300)
