@@ -18,6 +18,7 @@ c = const.c.cgs.value
 
 def calc_heating_rate(Mej, vmin, vmax, Amin, Amax, ffraction, kappa_effs, n):
     
+    
     # Temporary workaround. In order to clean this up also clean up thermalization.py
     vej = vmin
     alpha_max = vmax/vmin
@@ -269,7 +270,9 @@ def calc_heating_rate(Mej, vmin, vmax, Amin, Amax, ffraction, kappa_effs, n):
             each_elect_ths[k] += ele_th
             each_gamma_ths[k] += gam_th
 #        print A, Xfraction
-    data = {'t':np.multiply(ts,1./day),'total':total_heats,'gamma':total_gammas, 'electron':total_elects, 'gamma_th':total_gamma_ths,'electron_th':total_elect_ths}
+    #data = {'t':np.multiply(ts,1./day),'total':total_heats,'gamma':total_gammas, 'electron':total_elects, 'gamma_th':total_gamma_ths,'electron_th':total_elect_ths}
+    data = {'t': ts,'total':total_heats,'gamma':total_gammas, 'electron':total_elects, 'gamma_th':total_gamma_ths,'electron_th':total_elect_ths}
+    
     return data        
        # t *= 1.0 + delta_t
 #    print 'end'
@@ -609,7 +612,8 @@ def calc_heating_rate_sf(Mej,vej, Amin,Amax,ffraction,ffission_A,ffission_X,kapp
 #            each_gamma_ths[k] += gam_th
 #        print A, Xfraction
     data = {'t':np.multiply(ts,1./day),'total':total_heats,'gamma':total_gammas, 'electron':total_elects, 'gamma_th':total_gamma_ths,'electron_th':total_elect_ths}
-    return data        
+    #data = {'t': ts,'total':total_heats,'gamma':total_gammas, 'electron':total_elects, 'gamma_th':total_gamma_ths,'electron_th':total_elect_ths}
+    return data
        # t *= 1.0 + delta_t
     #print 'end'
 

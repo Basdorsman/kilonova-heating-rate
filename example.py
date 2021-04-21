@@ -15,7 +15,7 @@ opacities = np.asarray([3.0, 0.5]) * u.cm**2 / u.g
 n = 4.5
 t = np.geomspace(0.02, 10) * u.day
 
-L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='beta')
+L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='korobkin')
 
 # Benchmark it
 timing = int(np.round(1e6 * np.median(timeit.repeat(
@@ -37,7 +37,7 @@ abmags = [
     for bandpass in bandpasses]
 
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(4, 6))
-fig.suptitle(f'Run time: {timing} µs')
+fig.suptitle(f'KOROBKIN, Run time: {timing} µs')
 ax1.plot(t, T)
 ax2.plot(t, L)
 for label, abmag in zip(bandpass_labels, abmags):
