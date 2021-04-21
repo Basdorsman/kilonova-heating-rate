@@ -7,11 +7,14 @@ from scipy.interpolate import interp1d
 
 import importlib
 ht = importlib.import_module('kilonova_heating_rate.heat', __name__)
+from importlib import resources
+ffraction = resources.open_text(__package__, 'ffraction.dat')
+kappa_effs = resources.open_text(__package__, 'kappa_effs_A85_238.dat')
 
 
 __all__ = ('lightcurve',)
-kappa_effs = np.load('input_files/kappa_effs_A85_238.npy')
-ffraction = np.load('input_files/ffraction.npy')
+#kappa_effs = np.load('input_files/kappa_effs_A85_238.npy')
+#ffraction = np.load('input_files/ffraction.npy')
 
 
 def _luminosity(E, t, td, be):
