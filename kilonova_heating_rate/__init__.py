@@ -16,8 +16,7 @@ with resources.open_text(__package__, 'kappa_effs_A85_238.dat') as f:
 
 
 __all__ = ('lightcurve',)
-#kappa_effs = np.load('input_files/kappa_effs_A85_238.npy')
-#ffraction = np.load('input_files/ffraction.npy')
+
 
 
 def _luminosity(E, t, td, be):
@@ -35,7 +34,7 @@ def _rhs_korobkin(t, E, dM, td, be):
 
 
 def _rhs_interpolate(t, E, dM, td, be, heat_time, heat_rate):
-    heat= dM * _interpolate(t, heat_time, heat_rate)
+    heat= dM * np.interp(t,heat_time,heat_rate)
     L = _luminosity(E, t, td, be)
     dE_dt = -E / t - L + heat
     return dE_dt
@@ -73,14 +72,11 @@ def _heating_rate_korobkin(t, eth=0.5):
     brac = 0.5 - 1. / np.pi * np.arctan((t-t0) / sig)
     return eps0 * brac**alpha * eth / 0.5
 
-def _get_heating_rate_beta(Mej,vmin,vmax,Amin,Amax,ffraction, appa_effs,n):
+def _heating_rate_beta(Mej,vmin,vmax,Amin,Amax,ffraction, kappa_effs, n):
     beta = ht.calc_heating_rate(Mej,vmin,vmax,Amin,Amax,ffraction,kappa_effs,n)
     heat_time = np.array(beta['t'])
     heat_rate = np.array(beta['electron_th'])+np.array(beta['gamma_th'])
     return(heat_time,heat_rate)
-
-def _interpolate(t, heat_time, heat_rate):
-    return np.interp(t,heat_time,heat_rate)
 
 def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
                , Amin = 85, Amax = 209):
@@ -206,7 +202,7 @@ def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
             args=(dMs[:, None], tds[:, None], bes[:, None]),
             vectorized=True)
     elif heating_function == 'beta':
-        heat_time,heat_rate=_get_heating_rate_beta(mej, vej_0, vej_max, Amin,
+        heat_time,heat_rate= _heating_rate_beta(mej, vej_0, vej_max, Amin,
                                                 Amax, ffraction, kappa_effs, n)
         out = solve_ivp(
             _rhs_interpolate, (t0, t.max()), np.zeros(len(bes)), first_step=t0,
