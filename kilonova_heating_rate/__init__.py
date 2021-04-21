@@ -8,8 +8,11 @@ from scipy.interpolate import interp1d
 import importlib
 ht = importlib.import_module('kilonova_heating_rate.heat', __name__)
 from importlib import resources
-ffraction = resources.open_text(__package__, 'ffraction.dat')
-kappa_effs = resources.open_text(__package__, 'kappa_effs_A85_238.dat')
+with resources.open_text(__package__, 'ffraction.dat') as f:
+    ffraction = np.loadtxt(f)
+
+with resources.open_text(__package__, 'kappa_effs_A85_238.dat') as f:
+    kappa_effs = np.loadtxt(f)
 
 
 __all__ = ('lightcurve',)

@@ -15,7 +15,7 @@ opacities = np.asarray([3.0, 0.5]) * u.cm**2 / u.g
 n = 4.5
 t = np.geomspace(0.02, 10) * u.day
 
-L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='korobkin')
+L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='beta')
 
 # Benchmark it
 timing = int(np.round(1e6 * np.median(timeit.repeat(
