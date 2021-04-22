@@ -20,11 +20,11 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy"]
 
 [tool.poetry.dependencies]
-python = "^3.7.1"
+python = ">=3.7,<3.10"
 astropy = "*"
 numpy = "*"
 scipy = "*"
-pandas = "^1.2.4"
+numba = "^0.53.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"

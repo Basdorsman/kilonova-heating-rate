@@ -7,10 +7,10 @@ from scipy.interpolate import interp1d
 
 import importlib
 ht = importlib.import_module('kilonova_heating_rate.heat', __name__)
+
 from importlib import resources
 with resources.open_text(__package__, 'ffraction.dat') as f:
     ffraction = np.loadtxt(f)
-
 with resources.open_text(__package__, 'kappa_effs_A85_238.dat') as f:
     kappa_effs = np.loadtxt(f)
 
@@ -73,9 +73,10 @@ def _heating_rate_korobkin(t, eth=0.5):
     return eps0 * brac**alpha * eth / 0.5
 
 def _heating_rate_beta(Mej,vmin,vmax,Amin,Amax,ffraction, kappa_effs, n):
-    beta = ht.calc_heating_rate(Mej,vmin,vmax,Amin,Amax,ffraction,kappa_effs,n)
-    heat_time = np.array(beta['t'])
-    heat_rate = np.array(beta['electron_th'])+np.array(beta['gamma_th'])
+    ts, total_gamma_ths, total_elect_ths  = ht.calc_heating_rate(
+        Mej,vmin,vmax,Amin,Amax,ffraction,kappa_effs,n)
+    heat_time = np.array(ts)
+    heat_rate = np.array(total_gamma_ths) + np.array(total_elect_ths)
     return(heat_time,heat_rate)
 
 def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
