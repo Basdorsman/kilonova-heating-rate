@@ -34,7 +34,7 @@ def calc_heating_rate(Mej, vmin, vmax, Amin, Amax, ffraction, kappa_effs, n):
     alpha_min = 1
 
     t_initial = 0.01*day
-    t_final = 1.*day #10.
+    t_final = 3.*day #10.
     delta_t = 0.3#0.3
 
     Nth = 40#40 for default
