@@ -206,7 +206,7 @@ def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
         heat_time,heat_rate= _heating_rate_beta(mej, vej_0, vej_max, Amin,
                                                 Amax, ffraction, kappa_effs, n)
         out = solve_ivp(
-            _rhs_interpolate, (t0, t.max()*1.1), np.zeros(len(bes)), first_step=t0, #1.1 because I was out of bounds errors with interpolation
+            _rhs_interpolate, (t0, 86400*2), np.zeros(len(bes)), first_step=t0, #tmax is different because I'm getting a interpolation out of bounds error.
             args=(dMs[:, None], tds[:, None], bes[:, None], heat_time,
                   heat_rate), vectorized=True)
 
