@@ -206,7 +206,7 @@ def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
         heat_time,heat_rate= _heating_rate_beta(mej, vej_0, vej_max, Amin,
                                                 Amax, ffraction, kappa_effs, n)
         out = solve_ivp(
-            _rhs_interpolate, (t0, 86400*2), np.zeros(len(bes)), first_step=t0, #tmax is different because I'm getting a interpolation out of bounds error.
+            _rhs_interpolate, (t0, t.max()), np.zeros(len(bes)), first_step=t0, #tmax is different because I'm getting a interpolation out of bounds error.
             args=(dMs[:, None], tds[:, None], bes[:, None], heat_time,
                   heat_rate), vectorized=True)
 
@@ -218,6 +218,8 @@ def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
     # Do cubic interpolation in log-log space to evaluate at sample times.
     # Note that solve_ivp could do this in principal, but it does interpolation
     # in linear-linear space, which causes some minor artifacts.
+    print(out.t)
+    print(out.t[1:])
     L = np.exp(log_L_interp(np.log(t))) * (u.erg / u.s)
 
     # Effective radius

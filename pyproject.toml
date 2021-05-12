@@ -25,6 +25,7 @@ astropy = "*"
 numpy = "*"
 scipy = "*"
 numba = "^0.53.1"
+dorado-sensitivity = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
