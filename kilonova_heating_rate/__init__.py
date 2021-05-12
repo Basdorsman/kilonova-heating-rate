@@ -218,8 +218,6 @@ def lightcurve(t, mass, velocities, opacities, n, heating_function = 'korobkin'
     # Do cubic interpolation in log-log space to evaluate at sample times.
     # Note that solve_ivp could do this in principal, but it does interpolation
     # in linear-linear space, which causes some minor artifacts.
-    print(out.t)
-    print(out.t[1:])
     L = np.exp(log_L_interp(np.log(t))) * (u.erg / u.s)
 
     # Effective radius
