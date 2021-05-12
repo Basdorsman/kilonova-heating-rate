@@ -7,15 +7,17 @@ from kilonova_heating_rate import lightcurve
 from matplotlib import pyplot as plt
 import numpy as np
 import synphot
-
+import dorado.sensitivity
+bp_dorado = dorado.sensitivity.bandpasses.NUV_D
 
 mass = 0.05 * u.Msun
 velocities = np.asarray([0.1, 0.2, 0.4]) * c.c
 opacities = np.asarray([3.0, 0.5]) * u.cm**2 / u.g
 n = 4.5
 t = np.geomspace(0.02, 1) * u.day
+heating = 'beta'
 
-L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function='beta')
+L, T, r = lightcurve(t, mass, velocities, opacities, n, heating_function=heating)
 
 # Benchmark it
 timing = int(np.round(1e6 * np.median(timeit.repeat(
@@ -23,7 +25,7 @@ timing = int(np.round(1e6 * np.median(timeit.repeat(
     globals=globals(), number=1, repeat=10))))
 
 # Evaluate flux in band at 100 Mpc for a few different filters.
-DL = 100 * u.Mpc
+DL = 40 * u.Mpc
 bandpass_labels = 'ubvri'
 bandpasses = [
     synphot.SpectralElement.from_filter(f'johnson_{label}')
@@ -36,12 +38,17 @@ abmags = [
     [synphot.Observation(sed, bandpass).effstim(u.ABmag).value for sed in seds]
     for bandpass in bandpasses]
 
+abmag_dorado = [synphot.Observation(sed, bp_dorado).effstim(u.ABmag).value for sed in seds]
+    
+
+
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(4, 6))
-fig.suptitle(f'KOROBKIN, Run time: {timing} µs')
+fig.suptitle(f'{heating}, Run time: {timing} µs')
 ax1.plot(t, T)
 ax2.plot(t, L)
 for label, abmag in zip(bandpass_labels, abmags):
     ax3.plot(t, abmag, label=label.upper())
+ax3.plot(t,abmag_dorado,label='dorado')
 ax3.set_xlabel(f'Time ({t.unit})')
 ax1.set_ylabel(f'Temperature ({T.unit})')
 ax2.set_ylabel(f'Luminosity ({L.unit})')
@@ -49,7 +56,7 @@ ax3.set_ylabel('Apparent mag (AB)')
 ax1.set_xlim(0.01, 1)
 ax1.set_ylim(1e3, 1e4)
 ax2.set_ylim(1e40, 1e42)
-ax3.set_ylim(19, 25)
+#ax3.set_ylim(19, 25)
 ax3.invert_yaxis()
 ax1.set_yscale('log')
 ax2.set_yscale('log')
